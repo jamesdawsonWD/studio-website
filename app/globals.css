@@ -1,0 +1,1376 @@
+@import "tailwindcss";
+
+/* Tailwind v4 design tokens. Each --color-* entry generates the matching
+   bg-/text-/border-/ring-studio-* utility automatically. */
+@theme {
+  --color-studio-cream: #fffff5;
+  --color-studio-cream-fg: #fffef8;
+  --color-studio-ink: #1b1006;
+  --color-studio-text: #1b1006;
+  --color-studio-smoke: #383838;
+  --color-studio-water: #679cff;
+  --color-studio-card: #1b1006;
+  --color-studio-rocket: #ff6767;
+  --color-studio-rain: #4b5563;
+  --shadow-studio-card: 0 8px 32px rgb(0 0 0 / 0.3);
+}
+
+:root {
+  /* Studio scene scrolls main = 1200vh → 1100vh of scrollable distance
+     (one viewport stays pinned at the top). Every parallax-driven
+     animation maps its progress to this range, so changing the scene
+     length here propagates everywhere. */
+  --studio-scroll-height: 1100vh;
+  --studio-default-parallax-weight: 1.5;
+  --studio-step-size: 100vh;
+  /* Virtualized sections mount this far before entering the viewport (px or % only). */
+  --studio-viewport-cull-margin: 100%;
+  --studio-sun-space-band-height: 650px;
+  /* Extra scroll room above the fill — extends the header mask window before latch. */
+  --studio-sun-space-band-buffer-height: 120px;
+  --studio-sun-space-band-total-height: calc(
+    var(--studio-sun-space-band-height) + var(--studio-sun-space-band-buffer-height)
+  );
+  --studio-sun-space-band-fade-width: min(50vw, 480px);
+  --studio-sun-space-band-fade-height: min(52vh, 440px);
+  --studio-craft-horizon-height: min(95vh, 920px);
+  --studio-sun-horizon-width: min(280vw, 3200px);
+  --studio-sun-horizon-height: min(125vh, 1180px);
+  --studio-sun-horizon-offset-y: 84%;
+  /* Direction clouds — animation ends as step enters; starts delta vh earlier. */
+  --studio-direction-cloud-scroll-delta: 80vh;
+  /* Sun rise — delay scroll-driven start/end by this amount. */
+  --studio-sun-rise-delay: 200px;
+  /* Extra translateY at animation start (sun begins lower). */
+  --studio-sun-rise-start-offset: 200px;
+  /* Scroll-rise end pose — stable rest position after animation completes. */
+  --studio-sun-rise-rest-y: 400px;
+  --studio-sun-rise-delta: 110vh;
+  --studio-sun-step: 5;
+  --studio-sun-rise-end: calc(
+    var(--studio-sun-step) * var(--studio-step-size) /
+      var(--studio-default-parallax-weight) + var(--studio-sun-rise-delay, 0px)
+  );
+  --studio-sun-rise-start: calc(
+    var(--studio-sun-rise-end) - var(--studio-sun-rise-delta)
+  );
+  /* Scroll position when the sun section top crosses the 80px header bar. */
+  --studio-sun-section-at-header: calc(
+    (
+        var(--studio-sun-step) * var(--studio-step-size) + 80px
+      ) / var(--studio-default-parallax-weight)
+  );
+  /* Fallback latch once the full space band (buffer + fill) has scrolled through. */
+  --studio-header-space-latch-scroll: calc(
+    var(--studio-sun-section-at-header) +
+      var(--studio-sun-space-band-total-height) /
+        var(--studio-default-parallax-weight)
+  );
+  /* Snap page bg to space color once the sun section is in view. */
+  --studio-scene-bg-switch: calc(
+    var(--studio-sun-step) * var(--studio-step-size) /
+      var(--studio-default-parallax-weight) - 400px
+  );
+  --studio-craft-step: 6;
+  --studio-craft-rise-delay: 200px;
+  --studio-craft-rise-start-offset: 200px;
+  --studio-craft-rise-rest-y: 0px;
+  --studio-craft-rise-delta: 110vh;
+  --studio-craft-rise-end: calc(
+    var(--studio-craft-step) * var(--studio-step-size) /
+      var(--studio-default-parallax-weight) + var(--studio-craft-rise-delay, 0px)
+  );
+  --studio-craft-rise-start: calc(
+    var(--studio-craft-rise-end) - var(--studio-craft-rise-delta)
+  );
+  --studio-craft-star-flank-width: min(12vw, 112px);
+  --studio-craft-star-flank-inset: 6%;
+  --studio-craft-star-flank-left-bottom: 38%;
+  --studio-craft-star-flank-right-bottom: 31%;
+  --studio-details-section-pad-bottom: 5rem;
+  --studio-details-eye-max-size: 75px;
+  --studio-details-eye-gap-ratio: 0.4;
+  --studio-speed-details-gap: 100vh;
+  --studio-vortex-step: 10;
+  --studio-vortex-height: 200vh;
+  --studio-vortex-pin-start: calc(
+    (
+        var(--studio-vortex-step) * var(--studio-step-size)
+      ) / var(--studio-default-parallax-weight)
+  );
+  --studio-vortex-pin-end: calc(
+    (
+        var(--studio-vortex-step) * var(--studio-step-size) +
+          var(--studio-vortex-height)
+      ) / var(--studio-default-parallax-weight)
+  );
+  /* Hold at scale 1 for the first 100vh, zoom during the second 100vh. */
+  --studio-vortex-zoom-start: calc(
+    (
+        var(--studio-vortex-step) * var(--studio-step-size) + 100vh
+      ) / var(--studio-default-parallax-weight)
+  );
+  --studio-vortex-exit-start: calc(var(--studio-vortex-pin-end) - 100px);
+  --studio-vortex-zoom-end: var(--studio-vortex-exit-start);
+  --studio-vortex-rocket-start: calc(var(--studio-vortex-pin-start) + 100px);
+  --studio-vortex-reset-prep-start: calc(var(--studio-vortex-exit-start) - 100px);
+  --studio-vortex-pink: #ff8585;
+  /* Inner pink ring must exceed the viewport before the exit overlay takes over. */
+  --studio-vortex-zoom-scale: 42;
+  /* Match studio-trees side bleed, then pull toward center. */
+  --studio-direction-cloud-edge-bleed: 42.5%;
+  --studio-direction-cloud-center-pull: 150px;
+  /* Shared content column — nearly full width with consistent side gutters. */
+  --studio-content-gutter: 2.5rem;
+  /* Brand surface — mirrored from @theme for var() in inline styles / canvas. */
+  --color-studio-ink: #1b1006;
+  --color-studio-text: #1b1006;
+  --color-studio-card: #1b1006;
+}
+
+html.studio-scroll-scene,
+.studio-scene-main {
+  background-color: var(--color-studio-cream);
+  animation: studio-scene-bg steps(1, end) forwards;
+  animation-timeline: scroll(root block);
+  animation-range: var(--studio-scene-bg-switch)
+    calc(var(--studio-scene-bg-switch) + 1px);
+}
+
+@keyframes studio-scene-bg {
+  from {
+    background-color: var(--color-studio-cream);
+  }
+  to {
+    background-color: var(--color-studio-card);
+  }
+}
+
+/* Hide the native scrollbar — the painted Pong paddle replaces it.
+   Scrolling (trackpad/wheel/keys) still works and drives the paddle. */
+html {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
+
+/* Fixed elements that should align with the shared content column edge. */
+.studio-content-align-left {
+  left: var(--studio-content-gutter);
+}
+
+/* Studio clone — piano-trainer note lines fall to the hit line. */
+@keyframes studio-melody-fall {
+  0% {
+    transform: translate(-50%, -10vh);
+    opacity: 0.3;
+  }
+  10% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate(-50%, var(--melody-travel, 80vh));
+    opacity: 0.85;
+  }
+}
+
+.studio-melody-note {
+  will-change: transform;
+  animation: studio-melody-fall var(--melody-fall-ms, 2.4s) linear forwards;
+}
+
+/* Studio clone — rain line fall (animate the <g> — reliable in SVG). */
+.studio-rain-line {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  will-change: transform, opacity;
+}
+
+@keyframes studio-rain-fall {
+  0% {
+    transform: translateY(-30px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  55% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(1020px);
+    opacity: 0;
+  }
+}
+
+/* Studio clone — rocket exhaust particle. Long tail, shrinks aggressively
+   to taper the plume as it falls away. */
+@keyframes studio-particle-flame {
+  0% {
+    opacity: 0.95;
+    transform: scale(1.5) translateY(0);
+  }
+  60% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.12) translateY(240px);
+  }
+}
+
+/* The single parallax track. Every drifting element rides this animation.
+   --parallax-weight controls drift speed relative to scroll:
+     1   = matches scroll exactly
+     1.5 = over-shoots (default — clouds & banner share this weight)
+     <1  = lags behind (use for distant background layers).
+   Composes with --parallax-z so a layer can hold a translateZ depth pose
+   without losing its drift. */
+@keyframes parallax-drift {
+  from {
+    transform: translateZ(var(--parallax-z, 0)) translateY(0);
+  }
+  to {
+    transform: translateZ(var(--parallax-z, 0))
+      translateY(
+        calc(
+          var(--parallax-weight, var(--studio-default-parallax-weight)) *
+            var(--studio-scroll-height)
+        )
+      );
+  }
+}
+.parallax-layer {
+  animation: parallax-drift linear;
+  animation-timeline: scroll(root block);
+  will-change: transform;
+}
+.studio-scene-step {
+  top: calc(var(--studio-step) * -1 * var(--studio-step-size));
+}
+
+/* Hidden at scroll 0 — smoke appears one ring at a time from the centre out. */
+@keyframes studio-smoke-appear {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.studio-smoke {
+  opacity: 0;
+  animation: studio-smoke-appear linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: var(--smoke-appear-start, 0vh) var(--smoke-appear-end, 1.5vh);
+}
+
+@keyframes studio-smoke-particle-appear {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+.studio-smoke-particle {
+  opacity: 0;
+  animation: studio-smoke-particle-appear linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: var(--smoke-appear-start, 0vh) var(--smoke-appear-end, 1.5vh);
+}
+
+/* Rocket: rest pose at the viewport bottom, scales down while climbing to
+   viewport centre (0–50vh), holds through the hero (~100vh), then arcs up-right
+   past the help section (110–220vh). */
+@keyframes studio-rocket-flight {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, calc(-50% + 50vh - var(--studio-rocket-rest-offset)))
+      scale(var(--studio-rocket-launch-scale, 1)) rotate(0deg);
+  }
+  22.7% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  45.5% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  52% {
+    opacity: 1;
+    transform: translate(calc(-50% + 5vw), calc(-50% - 8vh)) scale(0.98)
+      rotate(8deg);
+  }
+  60.5% {
+    opacity: 1;
+    transform: translate(calc(-50% + 14vw), calc(-50% - 16vh)) scale(0.92)
+      rotate(18deg);
+  }
+  72.7% {
+    opacity: 0.9;
+    transform: translate(calc(-50% + 32vw), calc(-50% - 28vh)) scale(0.72)
+      rotate(36deg);
+  }
+  81.8% {
+    opacity: 0.65;
+    transform: translate(calc(-50% + 58vw), calc(-50% - 40vh)) scale(0.46)
+      rotate(56deg);
+  }
+  90.9% {
+    opacity: 0.25;
+    transform: translate(calc(-50% + 92vw), calc(-50% - 54vh)) scale(0.22)
+      rotate(74deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + 120vw), calc(-50% - 66vh)) scale(0.1)
+      rotate(88deg);
+  }
+}
+/* Rocket layering. Craft (step 6) and values (step 8) descend on the same
+   parallax track and each cross the centred rocket once. Demote the rocket
+   below the sticky scene's z-10 during those crossings. Retune if scene step
+   positions, parallax weight, or scroll height change. */
+@keyframes studio-rocket-layer {
+  0%,
+  52% {
+    z-index: 50;
+  }
+  53%,
+  68% {
+    z-index: 5;
+  }
+  69%,
+  72% {
+    z-index: 50;
+  }
+  73%,
+  88% {
+    z-index: 5;
+  }
+  89%,
+  100% {
+    z-index: 50;
+  }
+}
+.studio-rocket {
+  transform-origin: 50% 50%;
+  animation:
+    studio-rocket-flight linear forwards,
+    studio-rocket-layer linear;
+  animation-timeline: scroll(root block), scroll(root block);
+  animation-range: 0 220vh, normal;
+}
+
+/* Exhaust particles fade in once scroll has begun, then out with the rocket. */
+@keyframes studio-particles-flight {
+  0% {
+    opacity: 0;
+  }
+  1% {
+    opacity: 1;
+  }
+  45% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.studio-particles {
+  opacity: 0;
+  animation: studio-particles-flight linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: 0 220vh;
+}
+
+/* Studio scroll variant — normal document flow. Page scroll starts immediately;
+   clouds parallax over the full page; rocket launches in the first ~80vh. */
+.studio-scroll-page {
+  --studio-scroll-height: 480vh;
+  /* Normal flow: direction section enters after hero + help (~2 screens). */
+  --studio-direction-cloud-enter: 260vh;
+  --studio-direction-cloud-scroll-delta: 75vh;
+}
+
+@keyframes studio-scroll-hero-fade {
+  0%,
+  30% {
+    opacity: 1;
+  }
+  55%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.studio-scroll-hero-content {
+  animation: studio-scroll-hero-fade linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: 0 80vh;
+}
+
+@keyframes studio-scroll-rocket-launch {
+  0% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0)
+      scale(var(--studio-rocket-launch-scale, 1));
+  }
+  35% {
+    opacity: 1;
+    transform: translateX(-50%)
+      translateY(
+        calc(
+          50vh - var(--studio-rocket-scaled-half) +
+            var(--studio-rocket-rest-drop, 0px)
+        )
+      )
+      scale(1);
+  }
+  65% {
+    opacity: 1;
+    transform: translateX(-50%)
+      translateY(
+        calc(
+          50vh - var(--studio-rocket-scaled-half) +
+            var(--studio-rocket-rest-drop, 0px) - 50vh
+        )
+      )
+      scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%)
+      translateY(
+        calc(
+          50vh - var(--studio-rocket-scaled-half) +
+            var(--studio-rocket-rest-drop, 0px) - 120vh
+        )
+      )
+      scale(0.75);
+  }
+}
+
+.studio-scroll-rocket {
+  bottom: calc(
+    var(--studio-rocket-rest-bottom, 0px) - var(--studio-rocket-rest-drop, 0px)
+  );
+  transform: translateX(-50%);
+  transform-origin: 50% 50%;
+  animation: studio-scroll-rocket-launch linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: 0 80vh;
+}
+
+@keyframes studio-scroll-particles-show {
+  0%,
+  8% {
+    opacity: 0;
+  }
+  15%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.studio-scroll-particles {
+  opacity: 0;
+  animation: studio-scroll-particles-show linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: 0 80vh;
+}
+
+/* Floor mascots — walk the base line, pass in front / behind the rocket. */
+@keyframes studio-wee-walk-ltr {
+  0% {
+    left: -3rem;
+  }
+  100% {
+    left: calc(100% + 3rem);
+  }
+}
+
+@keyframes studio-wee-walk-rtl {
+  0% {
+    right: -3rem;
+  }
+  100% {
+    right: calc(100% + 3rem);
+  }
+}
+
+@keyframes studio-wee-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+/* Sit above the painted floor rule (see --studio-wee-floor-lift). */
+.studio-floor-walkers .studio-wee-walker,
+.studio-floor-walkers .studio-wee-chat-row,
+.studio-floor-launchers .studio-wee-launch-slot {
+  bottom: var(--studio-wee-floor-lift, 5px);
+}
+
+.studio-floor-walkers,
+.studio-floor-launchers {
+  --studio-wee-floor-lift: 5px;
+}
+
+/* Beak locked to 3 / 9 o'clock; feet pinned to the floor line. */
+.studio-wee-orient {
+  display: block;
+  transform-origin: 50% 100%;
+}
+
+.studio-wee-orient--right {
+  transform: rotate(-45deg);
+}
+
+.studio-wee-orient--left {
+  transform: scaleX(-1) rotate(-45deg);
+}
+
+/* Scroll launch: ~500px arc up, hang, spin on the way down, land. */
+@keyframes studio-wee-launch-ltr {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  6% {
+    transform: translate(0, 10px) rotate(12deg);
+    animation-timing-function: cubic-bezier(0.34, 1.15, 0.64, 1);
+  }
+  11% {
+    transform: translate(-10px, -72px) rotate(88deg);
+    animation-timing-function: cubic-bezier(0.18, 0.88, 0.32, 1);
+  }
+  20% {
+    transform: translate(-26px, -240px) rotate(195deg);
+    animation-timing-function: cubic-bezier(0.14, 0.78, 0.28, 1);
+  }
+  30% {
+    transform: translate(-40px, -410px) rotate(275deg);
+    animation-timing-function: cubic-bezier(0.1, 0.55, 0.22, 1);
+  }
+  38% {
+    transform: translate(-48px, -500px) rotate(310deg);
+    animation-timing-function: linear;
+  }
+  46% {
+    transform: translate(-48px, -500px) rotate(328deg);
+    animation-timing-function: linear;
+  }
+  50% {
+    transform: translate(-46px, -494px) rotate(332deg);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.95, 0.35);
+  }
+  58% {
+    transform: translate(-38px, -360px) rotate(410deg);
+    animation-timing-function: cubic-bezier(0.58, 0, 1, 0.42);
+  }
+  68% {
+    transform: translate(-28px, -210px) rotate(505deg);
+    animation-timing-function: cubic-bezier(0.68, 0, 1, 0.32);
+  }
+  78% {
+    transform: translate(-16px, -88px) rotate(595deg);
+    animation-timing-function: cubic-bezier(0.78, 0, 1, 0.22);
+  }
+  86% {
+    transform: translate(-6px, -18px) rotate(665deg);
+    animation-timing-function: cubic-bezier(0.36, 1.25, 0.55, 1);
+  }
+  93% {
+    transform: translate(0, 14px) rotate(708deg);
+    animation-timing-function: cubic-bezier(0.22, 0.9, 0.38, 1);
+  }
+  100% {
+    transform: translate(0, 0) rotate(720deg);
+  }
+}
+
+@keyframes studio-wee-launch-chat-b {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  6% {
+    transform: translate(0, 10px) rotate(-12deg);
+    animation-timing-function: cubic-bezier(0.34, 1.15, 0.64, 1);
+  }
+  11% {
+    transform: translate(12px, -72px) rotate(-88deg);
+    animation-timing-function: cubic-bezier(0.18, 0.88, 0.32, 1);
+  }
+  20% {
+    transform: translate(28px, -240px) rotate(-195deg);
+    animation-timing-function: cubic-bezier(0.14, 0.78, 0.28, 1);
+  }
+  30% {
+    transform: translate(42px, -410px) rotate(-275deg);
+    animation-timing-function: cubic-bezier(0.1, 0.55, 0.22, 1);
+  }
+  38% {
+    transform: translate(50px, -500px) rotate(-310deg);
+    animation-timing-function: linear;
+  }
+  46% {
+    transform: translate(50px, -500px) rotate(-328deg);
+    animation-timing-function: linear;
+  }
+  50% {
+    transform: translate(48px, -494px) rotate(-332deg);
+    animation-timing-function: cubic-bezier(0.42, 0, 0.95, 0.35);
+  }
+  58% {
+    transform: translate(40px, -360px) rotate(-410deg);
+    animation-timing-function: cubic-bezier(0.58, 0, 1, 0.42);
+  }
+  68% {
+    transform: translate(30px, -210px) rotate(-505deg);
+    animation-timing-function: cubic-bezier(0.68, 0, 1, 0.32);
+  }
+  78% {
+    transform: translate(18px, -88px) rotate(-595deg);
+    animation-timing-function: cubic-bezier(0.78, 0, 1, 0.22);
+  }
+  86% {
+    transform: translate(8px, -18px) rotate(-665deg);
+    animation-timing-function: cubic-bezier(0.36, 1.25, 0.55, 1);
+  }
+  93% {
+    transform: translate(0, 14px) rotate(-708deg);
+    animation-timing-function: cubic-bezier(0.22, 0.9, 0.38, 1);
+  }
+  100% {
+    transform: translate(0, 0) rotate(-720deg);
+  }
+}
+
+@keyframes studio-wee-stay-fade {
+  0%,
+  8% {
+    opacity: 1;
+  }
+  20%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.studio-wee-bob {
+  display: block;
+  transform-origin: 50% 100%;
+  animation: studio-wee-bob 0.55s ease-in-out infinite;
+}
+
+.studio-wee-walker--ltr {
+  transform-origin: 50% 100%;
+  animation: studio-wee-walk-ltr 22s linear infinite;
+}
+
+.studio-wee-walker--ltr-alt {
+  animation-duration: 26s;
+  animation-delay: -11s;
+}
+
+.studio-floor-launchers .studio-wee-launch-slot {
+  position: absolute;
+  transform-origin: 50% 100%;
+}
+
+.studio-floor-launchers .studio-wee-launch-slot--ltr {
+  left: 14%;
+}
+
+/* Second mascot in the chat pair (stay guy is first at 58%). */
+.studio-floor-launchers .studio-wee-launch-slot--chat-b {
+  left: calc(58% + 2.5rem + 0.125rem);
+}
+
+.studio-floor-launchers .studio-wee-launch--ltr {
+  animation: studio-wee-launch-ltr linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: 0 320vh;
+}
+
+.studio-wee-walker--rtl {
+  animation: studio-wee-walk-rtl 18s linear infinite;
+  animation-delay: -6s;
+}
+
+.studio-wee-stay {
+  animation: studio-wee-stay-fade linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: 0 220vh;
+}
+
+.studio-wee-launch {
+  display: block;
+  transform-origin: 50% 100%;
+  will-change: transform;
+}
+
+.studio-wee-launch .studio-wee-bob {
+  animation: none;
+}
+
+.studio-floor-launchers .studio-wee-launch--chat-b {
+  animation: studio-wee-launch-chat-b linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: 0 320vh;
+}
+
+@keyframes studio-wee-stay-fade-scroll {
+  0%,
+  10% {
+    opacity: 1;
+  }
+  24%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.studio-scroll-hero .studio-floor-launchers .studio-wee-launch--ltr {
+  animation: studio-wee-launch-ltr linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: 0 80vh;
+}
+
+.studio-scroll-hero .studio-floor-launchers .studio-wee-launch--chat-b {
+  animation: studio-wee-launch-chat-b linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: 0 80vh;
+}
+
+.studio-scroll-hero .studio-wee-stay {
+  animation-name: studio-wee-stay-fade-scroll;
+  animation-range: 0 80vh;
+}
+
+/* Direction step — clouds slide in from the sides on root scroll (step 4 band). */
+.studio-direction-cloud-art {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+}
+
+@keyframes studio-direction-cloud-enter-left {
+  0% {
+    opacity: 1;
+    transform: translateX(calc(-1 * var(--studio-direction-cloud-start, calc(100% + 15vw))))
+      scale(var(--studio-direction-cloud-scale, 0.92625));
+    animation-timing-function: cubic-bezier(0.2, 0.9, 0.24, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(
+        calc(
+          -1 * var(--studio-direction-cloud-edge-bleed, 42.5%) +
+            var(--studio-direction-cloud-center-pull, 150px)
+        )
+      )
+      scale(var(--studio-direction-cloud-scale, 0.92625));
+  }
+}
+
+@keyframes studio-direction-cloud-enter-right {
+  0% {
+    opacity: 1;
+    transform: translateX(var(--studio-direction-cloud-start, calc(100% + 15vw)))
+      scale(var(--studio-direction-cloud-scale, 0.92625));
+    animation-timing-function: cubic-bezier(0.2, 0.9, 0.24, 1);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(
+        calc(
+          var(--studio-direction-cloud-edge-bleed, 42.5%) -
+            var(--studio-direction-cloud-center-pull, 150px)
+        )
+      )
+      scale(var(--studio-direction-cloud-scale, 0.92625));
+  }
+}
+
+.studio-direction-cloud--left,
+.studio-direction-cloud--right {
+  --studio-direction-cloud-scale: 0.92625;
+  --studio-direction-cloud-start: calc(100% + 15vw);
+  --studio-direction-cloud-enter: calc(
+    var(--studio-step, 4) * var(--studio-step-size) /
+      var(--studio-default-parallax-weight)
+  );
+  animation-timeline: scroll(root block);
+  animation-range: calc(
+      var(--studio-direction-cloud-enter) -
+        var(--studio-direction-cloud-scroll-delta, 80vh)
+    )
+    var(--studio-direction-cloud-enter);
+}
+
+.studio-direction-cloud--left {
+  transform-origin: left bottom;
+  animation: studio-direction-cloud-enter-left linear forwards;
+}
+
+.studio-direction-cloud--right {
+  transform-origin: right bottom;
+  animation: studio-direction-cloud-enter-right linear forwards;
+}
+
+/* Plain cloud backdrop — full-width rows behind the raining flank clouds. */
+.studio-direction-cloud-backdrop {
+  --studio-step: 4;
+  z-index: 0;
+}
+
+@keyframes studio-backdrop-drift-right {
+  0% {
+    transform: scale(var(--studio-backdrop-scale, 1)) translateX(0);
+  }
+  100% {
+    transform: scale(var(--studio-backdrop-scale, 1))
+      translateX(var(--studio-backdrop-drift, 5vw));
+  }
+}
+
+.studio-direction-cloud-backdrop-row {
+  contain: layout style paint;
+  --studio-direction-cloud-enter: calc(
+    var(--studio-step, 4) * var(--studio-step-size) /
+      var(--studio-default-parallax-weight)
+  );
+  animation: studio-backdrop-drift-right linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: calc(
+      var(--studio-direction-cloud-enter) -
+        var(--studio-direction-cloud-scroll-delta, 80vh)
+    )
+    var(--studio-direction-cloud-enter);
+}
+
+/* Sun step — rises from below the cloud backdrop during direction → sun scroll. */
+@keyframes studio-sun-rise {
+  0% {
+    transform: translateY(
+        calc(
+          var(--studio-sun-rise-start-y, 95vh) +
+            var(--studio-sun-rise-start-offset, 0px)
+        )
+      )
+      scale(0.84);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  100% {
+    transform: translateY(var(--studio-sun-rise-rest-y, 0px)) scale(1);
+  }
+}
+
+.studio-sun-rise {
+  animation: studio-sun-rise linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: var(--studio-sun-rise-start) var(--studio-sun-rise-end);
+}
+
+@keyframes studio-craft-heading-rise {
+  0% {
+    transform: translateY(
+        calc(
+          var(--studio-sun-rise-start-y, 95vh) +
+            var(--studio-craft-rise-start-offset, 200px)
+        )
+      )
+      scale(0.84);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  100% {
+    transform: translateY(var(--studio-craft-rise-rest-y, 0px)) scale(1);
+  }
+}
+
+.studio-craft-horizon-rise {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 10;
+  min-height: var(--studio-craft-horizon-height);
+  animation: studio-craft-heading-rise linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: var(--studio-craft-rise-start) var(--studio-craft-rise-end);
+}
+
+.studio-craft-star-flanks {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.studio-craft-star-flank {
+  position: absolute;
+  width: var(--studio-craft-star-flank-width);
+  z-index: 0;
+}
+
+.studio-craft-star-flank--left {
+  left: var(--studio-craft-star-flank-inset);
+  bottom: var(--studio-craft-star-flank-left-bottom);
+  rotate: -10deg;
+}
+
+.studio-craft-star-flank--right {
+  right: var(--studio-craft-star-flank-inset);
+  bottom: var(--studio-craft-star-flank-right-bottom);
+  rotate: 10deg;
+}
+
+html.studio-scroll-scene .studio-fixed-starfield {
+  opacity: 0;
+  animation: studio-fixed-starfield-show steps(1, end) forwards;
+  animation-timeline: scroll(root block);
+  animation-range: var(--studio-scene-bg-switch)
+    calc(var(--studio-scene-bg-switch) + 1px);
+}
+
+/* Fixed header logo + CTA — cream overlay clip-path driven in fixed-logo.tsx
+   from `.studio-sun-section .studio-craft-horizon` getBoundingClientRect(). */
+.studio-header-cream-mask {
+  clip-path: inset(100% 0 0 0);
+  will-change: clip-path;
+}
+
+/* Vortex — dive into the centre while rings spin at staggered speeds. */
+@keyframes studio-vortex-layer-spin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+
+.studio-vortex-layer {
+  animation: studio-vortex-layer-spin linear infinite;
+  animation-duration: var(--vortex-rotate-duration, 12s);
+  will-change: transform;
+}
+
+/* Counter-translate cancels parallax drift while the step scrolls through 200vh. */
+.studio-vortex-stage {
+  animation: studio-vortex-counter linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: var(--studio-vortex-pin-start) var(--studio-vortex-pin-end);
+  overflow: visible;
+  will-change: transform;
+}
+
+/* Cancel parallax drift so the stage stays viewport-centred for 200vh. */
+@keyframes studio-vortex-counter {
+  from {
+    translate: 0 0;
+  }
+  to {
+    translate: 0 calc(-1 * var(--studio-vortex-height));
+  }
+}
+
+@keyframes studio-vortex-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(var(--studio-vortex-zoom-scale, 42));
+  }
+}
+
+.studio-vortex-zoom {
+  transform: scale(1);
+  opacity: 1;
+  overflow: visible;
+  animation: studio-vortex-zoom linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: var(--studio-vortex-zoom-start) var(--studio-vortex-zoom-end);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* Arc into the vortex centre — one smooth swoop, nose aimed at centre (atan2(-dx, dy)). */
+.studio-vortex-rocket {
+  top: 50%;
+  left: 50%;
+  bottom: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate(calc(-50% + 24vw), calc(-50% + 50vh))
+    scale(calc(var(--studio-rocket-launch-scale, 1) * 0.9)) rotate(-26deg);
+  transform-origin: 50% 50%;
+  animation:
+    studio-vortex-rocket-enter linear forwards,
+    studio-vortex-rocket-show linear forwards;
+  animation-timeline: scroll(root block), scroll(root block);
+  animation-range:
+    var(--studio-vortex-rocket-start) var(--studio-vortex-zoom-start),
+    var(--studio-vortex-rocket-start) var(--studio-vortex-zoom-start);
+}
+
+/* Opacity held at 1 for the whole flight — transform animates separately. */
+@keyframes studio-vortex-rocket-show {
+  0%,
+  99.9% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 1;
+    visibility: hidden;
+  }
+}
+
+@keyframes studio-vortex-rocket-enter {
+  0% {
+    transform: translate(calc(-50% + 24vw), calc(-50% + 50vh))
+      scale(calc(var(--studio-rocket-launch-scale, 1) * 0.9)) rotate(-26deg);
+  }
+  35% {
+    transform: translate(calc(-50% + 14vw), calc(-50% + 26vh))
+      scale(calc(var(--studio-rocket-launch-scale, 1) * 0.65)) rotate(-28deg);
+  }
+  60% {
+    transform: translate(calc(-50% + 5vw), calc(-50% + 8vh))
+      scale(calc(var(--studio-rocket-launch-scale, 1) * 0.42)) rotate(-32deg);
+  }
+  85% {
+    transform: translate(calc(-50% + 1vw), calc(-50% + 1vh))
+      scale(calc(var(--studio-rocket-launch-scale, 1) * 0.24)) rotate(-45deg);
+  }
+  95% {
+    transform: translate(-50%, -50%)
+      scale(calc(var(--studio-rocket-launch-scale, 1) * 0.18)) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+  }
+}
+
+.studio-vortex-rocket-particles {
+  opacity: 0;
+  animation: studio-vortex-rocket-particles linear forwards;
+  animation-timeline: scroll(root block);
+  animation-range: var(--studio-vortex-rocket-start) var(--studio-vortex-zoom-start);
+}
+
+@keyframes studio-vortex-rocket-particles {
+  0% {
+    opacity: 0;
+  }
+  12%,
+  99.9% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes studio-vortex-star-bob {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -7px;
+  }
+}
+
+.studio-vortex-eye-star {
+  animation: studio-vortex-star-bob var(--vortex-star-bob-duration, 3s)
+    ease-in-out infinite;
+  animation-delay: var(--vortex-star-bob-delay, 0s);
+}
+
+/* Solid pink — matches the inner vortex ring at max zoom (no graphic = no jump). */
+.studio-vortex-exit-overlay {
+  opacity: 1;
+  background-color: var(--studio-vortex-pink, #ff8585);
+  transition: opacity 850ms ease-out;
+}
+
+.studio-vortex-exit-overlay--fading {
+  opacity: 0;
+}
+
+html.studio-vortex-exiting,
+html.studio-vortex-exiting body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  background-color: var(--studio-vortex-pink, #ff8585) !important;
+}
+
+html.studio-vortex-exiting .studio-vortex-section,
+html.studio-vortex-exiting .studio-vortex-rocket,
+html.studio-vortex-exiting .studio-vortex-rocket-particles,
+html.studio-vortex-exiting .studio-smoke,
+html.studio-vortex-exiting .studio-smoke-particle {
+  visibility: hidden;
+}
+
+/* Hero rocket — frozen at rest after vortex reset until the user scrolls again. */
+html.studio-rocket-at-rest .studio-rocket {
+  animation: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  z-index: 50 !important;
+  transform: translate(-50%, calc(-50% + 50vh - var(--studio-rocket-rest-offset)))
+    scale(var(--studio-rocket-launch-scale, 1)) rotate(0deg) !important;
+}
+
+html.studio-rocket-at-rest .studio-particles {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+html.studio-rocket-at-rest,
+html.studio-rocket-at-rest .studio-scene-main {
+  animation: none !important;
+  background-color: var(--color-studio-cream) !important;
+}
+
+html.studio-rocket-at-rest .studio-fixed-starfield {
+  animation: none !important;
+  opacity: 0 !important;
+}
+
+@keyframes studio-fixed-starfield-show {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Sun — full-viewport space cap; breaks out of padded section insets. */
+.studio-sun-space-band {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 1;
+  width: 100vw;
+  padding: 20px;
+  max-width: none;
+  overflow: visible;
+  pointer-events: none;
+  transform: translateX(-50%);
+}
+
+.studio-sun-space-band__buffer {
+  width: 100%;
+  height: var(--studio-sun-space-band-buffer-height);
+  pointer-events: none;
+}
+
+.studio-sun-space-band__fill {
+  width: 100%;
+  height: var(--studio-sun-space-band-height);
+  background-color: transparent;
+}
+
+.studio-sun-space-band__fade {
+  position: absolute;
+  top: 0;
+  left: 41%;
+  z-index: 10;
+  width: var(--studio-sun-space-band-fade-width);
+  height: var(--studio-sun-space-band-fade-height);
+  pointer-events: none;
+  transform: translateX(-50vw);
+  background: linear-gradient(
+    to right,
+    var(--color-studio-card) 0%,
+    var(--color-studio-card) 30%,
+    transparent 59%
+  );
+}
+
+.studio-sun-section .studio-craft-horizon {
+  width: var(--studio-sun-horizon-width);
+  height: var(--studio-sun-horizon-height);
+  transform: translate(-50%, var(--studio-sun-horizon-offset-y));
+}
+
+/* Planet surface — scoped to the sun viewport, not the whole step layer. */
+.studio-sun-sky {
+  display: none;
+}
+
+.studio-sun-rainbow {
+  top: 4vh;
+  right: -14vw;
+  bottom: -150vh;
+  left: -12vw;
+  overflow: visible;
+}
+
+.studio-sun-rainbow-svg {
+  top: 0;
+  right: -10%;
+  bottom: -45%;
+  left: -20%;
+  width: auto;
+  height: auto;
+}
+
+.studio-craft-horizon {
+  width: min(200vw, 2400px);
+  height: var(--studio-craft-horizon-height);
+  border-radius: 50%;
+  background-color: var(--color-studio-cream);
+  transform: translate(-50%, 72%);
+}
+
+.studio-craft-horizon-heading {
+  position: relative;
+  left: 50%;
+  z-index: 1;
+  width: min(200vw, 2400px);
+  height: var(--studio-craft-horizon-height);
+  transform: translate(-50%, 72%);
+}
+
+.studio-craft-horizon-heading__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.studio-craft-horizon-heading__text {
+  font-family: var(--font-instrument-sans), sans-serif;
+  font-size: clamp(28px, 3.6vw, 52px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  fill: rgb(255 255 245);
+  -webkit-text-stroke: 0.001px transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .studio-wee-walker--ltr,
+  .studio-wee-walker--ltr-alt,
+  .studio-wee-walker--rtl,
+  .studio-wee-bob,
+  .studio-wee-launch,
+  .studio-wee-stay,
+  .studio-floor-launchers .studio-wee-launch--ltr,
+  .studio-floor-launchers .studio-wee-launch--chat-b {
+    animation: none;
+  }
+
+  .studio-wee-walker--ltr {
+    left: 12%;
+  }
+
+  .studio-wee-walker--ltr-alt {
+    left: 38%;
+  }
+
+  .studio-wee-walker--rtl {
+    right: 28%;
+  }
+
+  .studio-floor-launchers .studio-wee-launch-slot--ltr {
+    left: 14%;
+  }
+
+  .studio-floor-launchers .studio-wee-launch-slot--chat-b {
+    left: calc(58% + 2.5rem + 0.125rem);
+  }
+
+  .studio-direction-cloud--left {
+    animation: none;
+    opacity: 1;
+    transform: translateX(calc(-42.5% + var(--studio-direction-cloud-center-pull, 150px)))
+      scale(0.92625);
+    transform-origin: left bottom;
+  }
+
+  .studio-direction-cloud--right {
+    animation: none;
+    opacity: 1;
+    transform: translateX(calc(42.5% - var(--studio-direction-cloud-center-pull, 150px)))
+      scale(0.92625);
+    transform-origin: right bottom;
+  }
+
+  .studio-sun-rise {
+    animation: none;
+    opacity: 1;
+    transform: translateY(var(--studio-sun-rise-rest-y, 0px));
+  }
+
+  .studio-craft-horizon-rise {
+    animation: none;
+    transform: translateY(var(--studio-craft-rise-rest-y, 0px));
+  }
+
+  html.studio-scroll-scene .studio-fixed-starfield {
+    animation: none;
+    opacity: 1;
+  }
+
+  html.studio-scroll-scene,
+  .studio-scene-main {
+    animation: none;
+    background-color: var(--color-studio-card);
+  }
+
+  .studio-direction-cloud-backdrop-row {
+    animation: none;
+    transform: scale(var(--studio-backdrop-scale, 1));
+  }
+
+  .studio-vortex-layer {
+    animation: none;
+  }
+
+  .studio-vortex-stage {
+    animation: none;
+  }
+
+  .studio-vortex-zoom {
+    animation: none;
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  .studio-vortex-eye-star {
+    animation: none;
+  }
+
+  .studio-vortex-rocket {
+    animation: none;
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(var(--studio-rocket-launch-scale, 1));
+  }
+
+  .studio-vortex-rocket-particles {
+    animation: none;
+    opacity: 1;
+  }
+}
