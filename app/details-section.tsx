@@ -6,7 +6,7 @@ import { StudioHeading } from "./studio-heading";
 export function DetailsSection() {
   return (
     <section
-      className="studio-details-section relative grid h-full min-h-0 w-full grid-rows-[auto_minmax(0,1fr)] overflow-hidden pb-[var(--studio-details-section-pad-bottom,5rem)]"
+      className="studio-details-section relative flex min-h-[var(--studio-details-step-height)] w-full flex-col pb-[var(--studio-details-section-pad-bottom,5rem)]"
       aria-labelledby="details-heading"
     >
       <StudioContentRail className="relative z-10 shrink-0 pb-4 pt-8">
@@ -17,7 +17,7 @@ export function DetailsSection() {
           We obsess over the little things that amaze your clients.
         </p>
       </StudioContentRail>
-      <StudioContentRail className="relative flex min-h-0 flex-col justify-center overflow-hidden pb-6">
+      <StudioContentRail className="relative flex flex-1 flex-col justify-center pb-[var(--studio-details-eye-block-pad-bottom,1.5rem)]">
         <EyeGrid />
       </StudioContentRail>
     </section>

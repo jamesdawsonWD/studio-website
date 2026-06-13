@@ -71,7 +71,7 @@ export function SunHeading() {
   );
 
   return (
-    <div ref={headingRef}>
+    <div ref={headingRef} className="pt-8">
       <AnimatedStudioHeading
         id="sun-heading"
         lines={LINES}

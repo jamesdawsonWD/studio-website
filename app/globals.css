@@ -26,11 +26,6 @@
   /* Virtualized sections mount this far before entering the viewport (px or % only). */
   --studio-viewport-cull-margin: 100%;
   --studio-sun-space-band-height: 650px;
-  /* Extra scroll room above the fill — extends the header mask window before latch. */
-  --studio-sun-space-band-buffer-height: 120px;
-  --studio-sun-space-band-total-height: calc(
-    var(--studio-sun-space-band-height) + var(--studio-sun-space-band-buffer-height)
-  );
   --studio-sun-space-band-fade-width: min(50vw, 480px);
   --studio-sun-space-band-fade-height: min(52vh, 440px);
   --studio-craft-horizon-height: min(95vh, 920px);
@@ -60,12 +55,6 @@
         var(--studio-sun-step) * var(--studio-step-size) + 80px
       ) / var(--studio-default-parallax-weight)
   );
-  /* Fallback latch once the full space band (buffer + fill) has scrolled through. */
-  --studio-header-space-latch-scroll: calc(
-    var(--studio-sun-section-at-header) +
-      var(--studio-sun-space-band-total-height) /
-        var(--studio-default-parallax-weight)
-  );
   /* Snap page bg to space color once the sun section is in view. */
   --studio-scene-bg-switch: calc(
     var(--studio-sun-step) * var(--studio-step-size) /
@@ -88,8 +77,25 @@
   --studio-craft-star-flank-left-bottom: 38%;
   --studio-craft-star-flank-right-bottom: 31%;
   --studio-details-section-pad-bottom: 5rem;
+  --studio-details-eye-rows: 7;
   --studio-details-eye-max-size: 75px;
   --studio-details-eye-gap-ratio: 0.4;
+  --studio-details-eye-grid-height: calc(
+    var(--studio-details-eye-rows) * var(--studio-details-eye-max-size) +
+      (var(--studio-details-eye-rows) - 1) * var(--studio-details-eye-max-size) *
+      var(--studio-details-eye-gap-ratio)
+  );
+  /* Heading block + eye grid + section padding — at least one viewport tall. */
+  --studio-details-copy-block: 12rem;
+  --studio-details-eye-block-pad-bottom: 1.5rem;
+  --studio-details-step-height: max(
+    100vh,
+    calc(
+      var(--studio-details-copy-block) + var(--studio-details-eye-grid-height) +
+        var(--studio-details-eye-block-pad-bottom) +
+        var(--studio-details-section-pad-bottom)
+    )
+  );
   --studio-speed-details-gap: 100vh;
   --studio-vortex-step: 10;
   --studio-vortex-height: 200vh;
@@ -114,7 +120,7 @@
   --studio-vortex-zoom-end: var(--studio-vortex-exit-start);
   --studio-vortex-rocket-start: calc(var(--studio-vortex-pin-start) + 100px);
   --studio-vortex-reset-prep-start: calc(var(--studio-vortex-exit-start) - 100px);
-  --studio-vortex-pink: #ff8585;
+  --studio-vortex-exit-fill: var(--color-studio-cream);
   /* Inner pink ring must exceed the viewport before the exit overlay takes over. */
   --studio-vortex-zoom-scale: 42;
   /* Match studio-trees side bleed, then pull toward center. */
@@ -943,19 +949,26 @@ html::-webkit-scrollbar {
   rotate: 10deg;
 }
 
+/* Space sections stack above the parallax starfield inside the pinned stage. */
+.studio-craft-section,
+.studio-speed-section,
+.studio-details-section,
+.studio-vortex-section {
+  position: relative;
+  z-index: 2;
+}
+
+.studio-scroll-page > :not(.studio-fixed-starfield) {
+  position: relative;
+  z-index: 2;
+}
+
 html.studio-scroll-scene .studio-fixed-starfield {
   opacity: 0;
   animation: studio-fixed-starfield-show steps(1, end) forwards;
   animation-timeline: scroll(root block);
   animation-range: var(--studio-scene-bg-switch)
     calc(var(--studio-scene-bg-switch) + 1px);
-}
-
-/* Fixed header logo + CTA — cream overlay clip-path driven in fixed-logo.tsx
-   from `.studio-sun-section .studio-craft-horizon` getBoundingClientRect(). */
-.studio-header-cream-mask {
-  clip-path: inset(100% 0 0 0);
-  will-change: clip-path;
 }
 
 /* Vortex — dive into the centre while rings spin at staggered speeds. */
@@ -981,6 +994,16 @@ html.studio-scroll-scene .studio-fixed-starfield {
   animation-range: var(--studio-vortex-pin-start) var(--studio-vortex-pin-end);
   overflow: visible;
   will-change: transform;
+}
+
+/* Curved heading — fixed above the vortex mouth while the stage pins. */
+.studio-vortex-heading {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 56%;
+  z-index: 20;
+  min-height: min(44vh, 400px);
+  pointer-events: none;
 }
 
 /* Cancel parallax drift so the stage stays viewport-centred for 200vh. */
@@ -1107,22 +1130,19 @@ html.studio-scroll-scene .studio-fixed-starfield {
   animation-delay: var(--vortex-star-bob-delay, 0s);
 }
 
-/* Solid pink — matches the inner vortex ring at max zoom (no graphic = no jump). */
-.studio-vortex-exit-overlay {
-  opacity: 1;
-  background-color: var(--studio-vortex-pink, #ff8585);
-  transition: opacity 850ms ease-out;
-}
-
-.studio-vortex-exit-overlay--fading {
-  opacity: 0;
-}
-
 html.studio-vortex-exiting,
 html.studio-vortex-exiting body {
   overflow: hidden;
   overscroll-behavior: none;
-  background-color: var(--studio-vortex-pink, #ff8585) !important;
+  background-color: var(--studio-vortex-exit-fill, var(--color-studio-cream)) !important;
+}
+
+html.studio-vortex-exiting .studio-scene-main {
+  background-color: var(--studio-vortex-exit-fill, var(--color-studio-cream)) !important;
+}
+
+html.studio-vortex-exiting .studio-fixed-starfield {
+  opacity: 0 !important;
 }
 
 html.studio-vortex-exiting .studio-vortex-section,
@@ -1177,12 +1197,6 @@ html.studio-rocket-at-rest .studio-fixed-starfield {
   overflow: visible;
   pointer-events: none;
   transform: translateX(-50%);
-}
-
-.studio-sun-space-band__buffer {
-  width: 100%;
-  height: var(--studio-sun-space-band-buffer-height);
-  pointer-events: none;
 }
 
 .studio-sun-space-band__fill {
@@ -1267,6 +1281,17 @@ html.studio-rocket-at-rest .studio-fixed-starfield {
   letter-spacing: -0.02em;
   fill: rgb(255 255 245);
   -webkit-text-stroke: 0.001px transparent;
+}
+
+.studio-craft-horizon-heading.studio-vortex-horizon-heading {
+  width: min(188vw, 2280px);
+  height: min(44vh, 400px);
+  transform: translate(-50%, 8%);
+}
+
+.studio-craft-horizon-heading.studio-vortex-horizon-heading
+  .studio-craft-horizon-heading__text {
+  font-size: clamp(24px, 2.85vw, 44px);
 }
 
 @media (prefers-reduced-motion: reduce) {

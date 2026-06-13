@@ -5,7 +5,10 @@ import { StarCharacter } from "../star-character";
 import { useTrackingPupil } from "../use-tracking-pupil";
 
 const EYE_VIEWBOX = 56;
-const SCLERA = { cx: 24.5, cy: 31.5, r: 14.5 };
+/** Mirrored from the details eye — tail points bottom-right toward the vortex swirl. */
+const SCLERA = { cx: 31.5, cy: 31.5, r: 14.5 };
+const EYE_OUTLINE_PATH =
+  "M22 1H34C45.598 1 55 10.402 55 22V34C55 45.598 45.598 55 34 55H4C2.34315 55 1 53.6569 1 52V22L1.00684 21.458C1.29431 10.1105 10.5832 1 22 1Z";
 const PUPIL_R = 8;
 const PUPIL_EDGE_GAP = 2.5;
 
@@ -36,11 +39,13 @@ function VortexCenterEye() {
         aria-hidden
         className="block h-auto w-full"
       >
-        <path
-          d="M22 1H34C45.598 1 55 10.402 55 22V34C55 45.598 45.598 55 34 55H4C2.34315 55 1 53.6569 1 52V22L1.00684 21.458C1.29431 10.1105 10.5832 1 22 1Z"
-          stroke="#D9D9D9"
-          strokeWidth="2"
-        />
+        <g transform="matrix(-1 0 0 1 56 0)">
+          <path
+            d={EYE_OUTLINE_PATH}
+            stroke="#D9D9D9"
+            strokeWidth="2"
+          />
+        </g>
         <circle cx={SCLERA.cx} cy={SCLERA.cy} r={SCLERA.r} fill="#D9D9D9" />
         <circle
           cx={pupil.cx}

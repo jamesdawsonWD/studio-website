@@ -17,23 +17,19 @@ const BEAT_MS = 500;
 /** Arpeggio high → low → high across the six chord strings. */
 const ARPEGGIO = [0, 1, 2, 3, 4, 5, 4, 3, 2, 1] as const;
 
-/** Browsers block AudioContext until a user gesture — polling can't bypass that. */
-const UNLOCK_EVENTS = [
-  "pointerdown",
-  "keydown",
-  "touchstart",
-  "wheel",
-] as const;
-
 type BeatListener = () => void;
 
 type StudioAudioContextValue = {
+  isPlaying: boolean;
+  toggleAudio: () => Promise<void>;
+  /** True while the arpeggio loop is running — gates beat-synced UI. */
   audioReady: boolean;
-  /** Fires on each arpeggio pluck — subscribe instead of polling context state. */
   subscribeBeat: (listener: BeatListener) => () => void;
 };
 
 const StudioAudioContext = createContext<StudioAudioContextValue>({
+  isPlaying: false,
+  toggleAudio: async () => {},
   audioReady: false,
   subscribeBeat: () => () => {},
 });
@@ -42,10 +38,10 @@ export function useStudioAudio() {
   return useContext(StudioAudioContext);
 }
 
-/** Site-wide guitar arpeggio + gesture unlock for the studio clone. */
+/** Site-wide guitar arpeggio — starts only from the header toggle. */
 export function StudioAudioProvider({ children }: { children: ReactNode }) {
   const [motionOk, setMotionOk] = useState(true);
-  const [audioReady, setAudioReady] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
   const arpeggioIndexRef = useRef(0);
   const beatTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const beatListenersRef = useRef(new Set<BeatListener>());
@@ -63,35 +59,16 @@ export function StudioAudioProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  useEffect(() => {
-    let done = false;
-    const opts = { capture: true, passive: true } as const;
-
-    const start = (ok: boolean) => {
-      if (!ok || done) return;
-      done = true;
-      setAudioReady(true);
-      for (const event of UNLOCK_EVENTS) {
-        document.removeEventListener(event, onGesture, opts);
-      }
-    };
-
-    const onGesture = () => {
-      void unlockAudio().then(start);
-    };
-
-    for (const event of UNLOCK_EVENTS) {
-      document.addEventListener(event, onGesture, opts);
+  const toggleAudio = useCallback(async () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+      return;
     }
 
-    void unlockAudio().then(start);
-
-    return () => {
-      for (const event of UNLOCK_EVENTS) {
-        document.removeEventListener(event, onGesture, opts);
-      }
-    };
-  }, []);
+    const ok = await unlockAudio();
+    if (!ok) return;
+    setIsPlaying(true);
+  }, [isPlaying]);
 
   useEffect(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -102,7 +79,7 @@ export function StudioAudioProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!motionOk || !audioReady) return;
+    if (!motionOk || !isPlaying) return;
 
     let cancelled = false;
 
@@ -125,10 +102,17 @@ export function StudioAudioProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       if (beatTimerRef.current) clearTimeout(beatTimerRef.current);
     };
-  }, [motionOk, audioReady, emitBeat]);
+  }, [motionOk, isPlaying, emitBeat]);
 
   return (
-    <StudioAudioContext.Provider value={{ audioReady, subscribeBeat }}>
+    <StudioAudioContext.Provider
+      value={{
+        isPlaying,
+        toggleAudio,
+        audioReady: isPlaying,
+        subscribeBeat,
+      }}
+    >
       {children}
     </StudioAudioContext.Provider>
   );

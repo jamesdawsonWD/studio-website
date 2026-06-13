@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { flushSync } from "react-dom";
 import { readCssLengthPx } from "../read-css-length-px";
 import {
@@ -15,16 +15,15 @@ import {
   releaseVortexScrollLock,
 } from "./vortex-scroll-lock";
 
-const EXIT_FADE_MS = 850;
+/** Full-screen cream hold before releasing back to the hero. */
+const EXIT_HOLD_MS = 850;
 
-export type VortexExitPhase = "idle" | "overlay" | "fading";
-
+/** Snap to full-screen cream at the vortex exit threshold — no overlay layer. */
 export function useVortexExit() {
-  const [phase, setPhase] = useState<VortexExitPhase>("idle");
   const exitingRef = useRef(false);
+  const holdTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    let exitStart = readCssLengthPx("--studio-vortex-exit-start");
     let prepStart = readCssLengthPx("--studio-vortex-reset-prep-start");
 
     const syncPrep = () => {
@@ -47,10 +46,29 @@ export function useVortexExit() {
   }, []);
 
   useEffect(() => {
-    if (phase !== "idle") return;
-
     let exitStart = readCssLengthPx("--studio-vortex-exit-start");
     let prepStart = readCssLengthPx("--studio-vortex-reset-prep-start");
+
+    const beginExit = () => {
+      if (exitingRef.current) return;
+      exitingRef.current = true;
+
+      flushSync(() => {
+        setVortexResetPrep(true);
+      });
+
+      engageVortexScrollLock();
+
+      holdTimerRef.current = window.setTimeout(() => {
+        releaseVortexScrollLock();
+        exitingRef.current = false;
+        holdTimerRef.current = null;
+
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new Event("scroll"));
+        });
+      }, EXIT_HOLD_MS);
+    };
 
     const check = () => {
       if (exitingRef.current) return;
@@ -64,12 +82,7 @@ export function useVortexExit() {
       }
 
       if (window.scrollY >= exitStart - 1) {
-        exitingRef.current = true;
-        flushSync(() => {
-          setVortexResetPrep(true);
-        });
-        engageVortexScrollLock();
-        setPhase("overlay");
+        beginExit();
       }
     };
 
@@ -95,38 +108,9 @@ export function useVortexExit() {
       window.removeEventListener("scroll", check);
       window.removeEventListener("scroll", resumeHeroScroll);
       window.removeEventListener("resize", onResize);
+      if (holdTimerRef.current) {
+        window.clearTimeout(holdTimerRef.current);
+      }
     };
-  }, [phase]);
-
-  useLayoutEffect(() => {
-    if (phase !== "overlay") return;
-
-    const frame = requestAnimationFrame(() => {
-      setPhase("fading");
-    });
-
-    return () => cancelAnimationFrame(frame);
-  }, [phase]);
-
-  useEffect(() => {
-    if (phase !== "fading") return;
-
-    const timer = window.setTimeout(() => {
-      releaseVortexScrollLock();
-      exitingRef.current = false;
-      setPhase("idle");
-
-      requestAnimationFrame(() => {
-        window.dispatchEvent(new Event("scroll"));
-      });
-    }, EXIT_FADE_MS);
-
-    return () => window.clearTimeout(timer);
-  }, [phase]);
-
-  return {
-    phase,
-    showOverlay: phase === "overlay" || phase === "fading",
-    fading: phase === "fading",
-  };
+  }, []);
 }

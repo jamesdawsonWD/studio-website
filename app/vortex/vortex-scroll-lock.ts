@@ -2,9 +2,6 @@ import {
   setVortexResetPrep,
   setVortexRocketAtRest,
 } from "./vortex-reset-prep";
-import { resetSpaceChrome } from "../studio-space-chrome";
-import { resetSpaceChromeTransitionState } from "../use-studio-header-cream-clip";
-
 const SCROLL_KEYS = new Set([
   " ",
   "PageUp",
@@ -28,8 +25,6 @@ export function engageVortexScrollLock() {
   html.classList.add("studio-vortex-exiting");
   setVortexRocketAtRest(true);
   setVortexResetPrep(true);
-  resetSpaceChrome();
-  resetSpaceChromeTransitionState();
   window.scrollTo(0, 0);
 
   body.style.position = "fixed";

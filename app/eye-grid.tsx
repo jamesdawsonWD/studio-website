@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useStudioAudio } from "./studio-audio-provider";
 
-const ROWS = 7;
+const ROWS = 7; /* keep in sync with --studio-details-eye-rows in globals.css */
 const DEFAULT_MAX_CELL_PX = 75;
 const DEFAULT_GAP_RATIO = 0.4;
 const BEAT_MS = 500;

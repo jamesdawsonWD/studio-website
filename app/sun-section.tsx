@@ -14,7 +14,6 @@ export function SunSection() {
       aria-labelledby="sun-heading"
     >
       <div aria-hidden className="studio-sun-space-band">
-        <div className="studio-sun-space-band__buffer" />
         <div className="studio-sun-space-band__fill" />
         <div className="studio-craft-horizon pointer-events-none absolute bottom-0 left-1/2 z-[1]" />
       </div>

@@ -20,7 +20,7 @@ import type { StudioDirection } from "./studio-direction";
 import { DetailsSection } from "./details-section";
 import { SpeedSection } from "./speed-section";
 import { VortexSection } from "./vortex-section";
-import { VortexExitOverlay } from "./vortex/vortex-exit-overlay";
+import { useVortexExit } from "./vortex/use-vortex-exit";
 import { ParallaxLayer } from "./parallax-layer";
 import { StudioSmoke } from "./studio-smoke";
 import { StudioIsland } from "./studio-island";
@@ -136,6 +136,8 @@ function SceneStepLayer({
 // ─── Component ─────────────────────────────────────────────────────────────
 
 export default function StudioClone() {
+  useVortexExit();
+
   const [rain, setRain] = useState<Record<string, boolean>>({});
   const toggleRain = (key: string) =>
     setRain((r) => ({ ...r, [key]: !r[key] }));
@@ -215,7 +217,6 @@ export default function StudioClone() {
   return (
     <>
       <StudioScrollTheme />
-      <StudioFixedStarfield />
       <FixedLogo />
       <main
         className="studio-scene-main relative overflow-x-clip"
@@ -225,6 +226,7 @@ export default function StudioClone() {
         }}
       >
         <div className="sticky top-0 z-10 flex h-screen w-full flex-col items-center justify-center overflow-visible">
+          <StudioFixedStarfield placement="absolute" />
           {/* DOM order is bottom-up for accessibility; explicit z-index preserves
               paint order (melody < clouds < banner < hero < water). Smoke lives in
               a fixed layer (see below) so smoke can stack above the rocket on takeoff. */}
@@ -317,11 +319,13 @@ export default function StudioClone() {
               <SceneStepLayer
                 key={id}
                 step={step}
-                fillsViewport={id !== "vortex"}
+                fillsViewport={id !== "vortex" && id !== "details"}
                 className={
                   id === "vortex"
                     ? "h-[var(--studio-vortex-height,200vh)]"
-                    : ""
+                    : id === "details"
+                      ? "min-h-[var(--studio-details-step-height)]"
+                      : ""
                 }
                 overflowVisible={
                   id === "sun" ||
@@ -350,7 +354,6 @@ export default function StudioClone() {
 
       <StudioRocket />
       <StudioRocket variant="vortex" culled />
-      <VortexExitOverlay />
 
       <ParallaxLayer
         weight={SCENE.parallaxWeight}

@@ -4,10 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import { useFixedStarfieldCanvas } from "./use-fixed-starfield-canvas";
 
 const SPACE_SECTION_SELECTOR =
-  ".studio-craft-section, .studio-speed-section, .studio-details-section";
+  ".studio-craft-section, .studio-speed-section, .studio-details-section, .studio-vortex-section";
 
-/** Fixed viewport canvas — parallax drift synced to root scroll. */
-export function StudioFixedStarfield() {
+type StudioFixedStarfieldProps = {
+  /** `absolute` inside the pinned parallax stage; `fixed` for native scroll pages. */
+  placement?: "fixed" | "absolute";
+};
+
+/** Viewport canvas — parallax drift synced to root scroll. */
+export function StudioFixedStarfield({
+  placement = "fixed",
+}: StudioFixedStarfieldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [active, setActive] = useState(false);
 
@@ -39,7 +46,11 @@ export function StudioFixedStarfield() {
   return (
     <div
       aria-hidden
-      className="studio-fixed-starfield pointer-events-none fixed inset-0 z-[3] overflow-hidden"
+      className={
+        placement === "absolute"
+          ? "studio-fixed-starfield pointer-events-none absolute inset-0 z-[1] overflow-hidden"
+          : "studio-fixed-starfield pointer-events-none fixed inset-0 z-[1] overflow-hidden"
+      }
     >
       <canvas ref={canvasRef} className="absolute inset-0 size-full" />
     </div>
