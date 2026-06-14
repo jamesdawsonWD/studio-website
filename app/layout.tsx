@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Instrument_Sans } from "next/font/google";
+import { Inter, Instrument_Sans, Kanit } from "next/font/google";
 import "./globals.css";
 import { StudioProviders } from "./studio-providers";
 
@@ -23,6 +23,13 @@ const instrumentSans = Instrument_Sans({
   display: "swap",
 });
 
+const kanit = Kanit({
+  subsets: ["latin"],
+  weight: "700",
+  variable: "--font-kanit",
+  display: "swap",
+});
+
 export default function RootLayout({
   children,
 }: {
@@ -31,7 +38,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} ${instrumentSans.variable} text-studio-text`}
+        className={`${inter.variable} ${instrumentSans.variable} ${kanit.variable} text-studio-text`}
         style={{ fontFamily: "var(--font-inter)" }}
       >
         <StudioProviders>{children}</StudioProviders>

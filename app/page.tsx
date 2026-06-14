@@ -21,6 +21,7 @@ import { DetailsSection } from "./details-section";
 import { SpeedSection } from "./speed-section";
 import { VortexSection } from "./vortex-section";
 import { useVortexExit } from "./vortex/use-vortex-exit";
+import { VortexTeleportFlashOverlay } from "./vortex/vortex-teleport-flash-overlay";
 import { ParallaxLayer } from "./parallax-layer";
 import { StudioSmoke } from "./studio-smoke";
 import { StudioIsland } from "./studio-island";
@@ -365,6 +366,7 @@ export default function StudioClone() {
       </ParallaxLayer>
 
       <StudioIsland visible={islandVisible} />
+      <VortexTeleportFlashOverlay />
     </>
   );
 }

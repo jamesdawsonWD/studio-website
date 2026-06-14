@@ -116,11 +116,16 @@
         var(--studio-vortex-step) * var(--studio-step-size) + 100vh
       ) / var(--studio-default-parallax-weight)
   );
-  --studio-vortex-exit-start: calc(var(--studio-vortex-pin-end) - 100px);
+  --studio-vortex-exit-scroll-into-zoom: 50vh;
+  --studio-vortex-exit-start: calc(
+    var(--studio-vortex-zoom-start) +
+      var(--studio-vortex-exit-scroll-into-zoom) / var(--studio-default-parallax-weight)
+  );
   --studio-vortex-zoom-end: var(--studio-vortex-exit-start);
   --studio-vortex-rocket-start: calc(var(--studio-vortex-pin-start) + 100px);
   --studio-vortex-reset-prep-start: calc(var(--studio-vortex-exit-start) - 100px);
   --studio-vortex-exit-fill: var(--color-studio-cream);
+  --studio-vortex-teleport-flash-ms: 200ms;
   /* Inner pink ring must exceed the viewport before the exit overlay takes over. */
   --studio-vortex-zoom-scale: 42;
   /* Match studio-trees side bleed, then pull toward center. */
@@ -1153,6 +1158,26 @@ html.studio-vortex-exiting .studio-smoke-particle {
   visibility: hidden;
 }
 
+.studio-vortex-teleport-flash {
+  animation: studio-vortex-teleport-flash var(--studio-vortex-teleport-flash-ms, 200ms)
+    ease-in-out forwards;
+}
+
+@keyframes studio-vortex-teleport-flash {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 /* Hero rocket — frozen at rest after vortex reset until the user scrolls again. */
 html.studio-rocket-at-rest .studio-rocket {
   animation: none !important;
@@ -1276,11 +1301,31 @@ html.studio-rocket-at-rest .studio-fixed-starfield {
 
 .studio-craft-horizon-heading__text {
   font-family: var(--font-instrument-sans), sans-serif;
-  font-size: clamp(28px, 3.6vw, 52px);
+  font-size: clamp(34px, 4.4vw, 64px);
   font-weight: 500;
   letter-spacing: -0.02em;
   fill: rgb(255 255 245);
   -webkit-text-stroke: 0.001px transparent;
+}
+
+.studio-craft-horizon-heading__text--hero-stat {
+  line-height: 1.8;
+  font-family: var(--font-kanit), sans-serif;
+}
+
+.studio-craft-horizon-heading__hero-stat {
+  font-family: var(--font-kanit), sans-serif;
+  font-size: clamp(220px, 38vw, 640px);
+  font-weight: 700;
+  letter-spacing: -0.07em;
+  line-height: 0.78;
+}
+
+.studio-craft-horizon-heading__hero-stat-suffix {
+  font-family: var(--font-kanit), sans-serif;
+  font-size: clamp(34px, 4.4vw, 64px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 .studio-craft-horizon-heading.studio-vortex-horizon-heading {

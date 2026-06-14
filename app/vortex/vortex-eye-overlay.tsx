@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { StarCharacter } from "../star-character";
 import { useTrackingPupil } from "../use-tracking-pupil";
+import { useVortexScrollActive } from "./use-vortex-scroll-active";
 
 const EYE_VIEWBOX = 56;
 /** Mirrored from the details eye — tail points bottom-right toward the vortex swirl. */
@@ -23,12 +24,14 @@ const STAR_FLANKS = [
 
 function VortexCenterEye() {
   const svgRef = useRef<SVGSVGElement>(null);
+  const vortexScrollActive = useVortexScrollActive();
   const pupil = useTrackingPupil({
     svgRef,
     white: SCLERA,
     pupilR: PUPIL_R,
     edgeGap: PUPIL_EDGE_GAP,
     viewBoxSize: EYE_VIEWBOX,
+    enabled: !vortexScrollActive,
   });
 
   return (

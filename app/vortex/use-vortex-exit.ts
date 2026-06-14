@@ -14,11 +14,15 @@ import {
   isVortexScrollLocked,
   releaseVortexScrollLock,
 } from "./vortex-scroll-lock";
+import {
+  triggerVortexTeleportFlash,
+  VORTEX_TELEPORT_FLASH_MS,
+} from "./vortex-teleport-flash";
 
 /** Full-screen cream hold before releasing back to the hero. */
-const EXIT_HOLD_MS = 850;
+const EXIT_HOLD_MS = VORTEX_TELEPORT_FLASH_MS;
 
-/** Snap to full-screen cream at the vortex exit threshold — no overlay layer. */
+/** Teleport scroll to hero with a full-screen cream flash overlay. */
 export function useVortexExit() {
   const exitingRef = useRef(false);
   const holdTimerRef = useRef<number | null>(null);
@@ -58,6 +62,7 @@ export function useVortexExit() {
       });
 
       engageVortexScrollLock();
+      triggerVortexTeleportFlash();
 
       holdTimerRef.current = window.setTimeout(() => {
         releaseVortexScrollLock();

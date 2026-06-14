@@ -21,7 +21,7 @@ export function CraftHorizonContent() {
       </ParallaxLayer>
 
       <div className="studio-craft-horizon-rise pointer-events-none">
-        <CraftHorizonHeading />
+        <CraftHorizonHeading className="w-[min(96vw,1600px)] max-w-[min(96vw,1600px)]" />
       </div>
     </>
   );
