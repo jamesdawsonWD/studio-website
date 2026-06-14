@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState, type RefObject } from "react";
+import { useLayoutEffect, useRef, useState, type RefObject } from "react";
 
 /** Fallback when `--studio-viewport-cull-margin` is unset (px or % only). */
 export const VIEWPORT_CULL_MARGIN = "100%";
@@ -83,7 +83,10 @@ export function isIntersectingViewport(
   );
 }
 
-/** True while `ref` intersects the viewport — unmounts in both scroll directions. */
+/** Frames outside the viewport before hiding a culled layer. */
+const CULL_HIDE_FRAMES = 4;
+
+/** True while `ref` intersects the viewport — hides culled layers off-screen. */
 export function useViewportVisible(
   ref: RefObject<Element | null>,
   {
@@ -92,6 +95,7 @@ export function useViewportVisible(
   }: Options = {},
 ) {
   const [visible, setVisible] = useState(false);
+  const missFramesRef = useRef(0);
 
   useLayoutEffect(() => {
     if (!enabled) {
@@ -104,11 +108,24 @@ export function useViewportVisible(
 
     const margin = resolveRootMargin(rootMargin);
 
-    setVisible(isIntersectingViewport(el, margin));
+    const applyVisibility = (intersecting: boolean) => {
+      if (intersecting) {
+        missFramesRef.current = 0;
+        setVisible(true);
+        return;
+      }
+
+      missFramesRef.current += 1;
+      if (missFramesRef.current >= CULL_HIDE_FRAMES) {
+        setVisible(false);
+      }
+    };
+
+    applyVisibility(isIntersectingViewport(el, margin));
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry) setVisible(entry.isIntersecting);
+        if (entry) applyVisibility(entry.isIntersecting);
       },
       { threshold: 0, rootMargin: margin },
     );
@@ -123,8 +140,7 @@ export function useViewportVisible(
       raf = requestAnimationFrame(() => {
         raf = 0;
         if (!el.isConnected) return;
-        const intersecting = isIntersectingViewport(el, margin);
-        setVisible((prev) => (prev === intersecting ? prev : intersecting));
+        applyVisibility(isIntersectingViewport(el, margin));
       });
     };
 
@@ -135,6 +151,7 @@ export function useViewportVisible(
       observer.disconnect();
       window.removeEventListener("scroll", syncFromScroll);
       if (raf) cancelAnimationFrame(raf);
+      missFramesRef.current = 0;
     };
   }, [enabled, rootMargin]);
 

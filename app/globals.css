@@ -237,9 +237,21 @@ html::-webkit-scrollbar {
      1   = matches scroll exactly
      1.5 = over-shoots (default — clouds & banner share this weight)
      <1  = lags behind (use for distant background layers).
-   Composes with --parallax-z so a layer can hold a translateZ depth pose
-   without losing its drift. */
+   Optional --parallax-z adds translateZ when a layer sets depth via ParallaxLayer z. */
 @keyframes parallax-drift {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(
+      calc(
+        var(--parallax-weight, var(--studio-default-parallax-weight)) *
+          var(--studio-scroll-height)
+      )
+    );
+  }
+}
+@keyframes parallax-drift-z {
   from {
     transform: translateZ(var(--parallax-z, 0)) translateY(0);
   }
@@ -256,7 +268,12 @@ html::-webkit-scrollbar {
 .parallax-layer {
   animation: parallax-drift linear;
   animation-timeline: scroll(root block);
-  will-change: transform;
+}
+.parallax-layer[style*="--parallax-z"] {
+  animation-name: parallax-drift-z;
+}
+.studio-scene-sticky {
+  isolation: isolate;
 }
 .studio-scene-step {
   top: calc(var(--studio-step) * -1 * var(--studio-step-size));

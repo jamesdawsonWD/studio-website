@@ -13,10 +13,10 @@ type Props = {
    *  Clouds + scroll sections all share the same weight so they ride the same
    *  rhythm. Use different values when you want depth separation. */
   weight?: number;
-  /** Optional translateZ for depth (read by the shared parallax keyframe so
-   *  it composes with the drift). Pair with a parent `perspective:` value. */
+  /** Optional translateZ for depth — opt-in via ParallaxLayer z prop. */
   z?: number | string;
-  /** Unmount children when this layer is fully outside the viewport. */
+  /** Hide children when this layer is fully outside the viewport (keeps mounted
+   *  so scroll-driven transforms do not reset on remount). */
   culled?: boolean;
   /** Mount early before the vortex scroll reset so the hero is ready at top. */
   mountBeforeVortexReset?: boolean;
@@ -69,7 +69,16 @@ export function ParallaxLayer({
       className={className ? `parallax-layer ${className}` : "parallax-layer"}
       style={{ ...style, ...vars } as CSSProperties}
     >
-      {showChildren ? children : null}
+      {culled ? (
+        <div
+          className={showChildren ? undefined : "invisible"}
+          aria-hidden={showChildren ? undefined : true}
+        >
+          {children}
+        </div>
+      ) : (
+        children
+      )}
     </div>
   );
 }

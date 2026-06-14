@@ -40,8 +40,6 @@ const SCENE = {
    *  leaving (totalHeight − 100vh) of scrollable distance — this drives
    *  --studio-scroll-height in globals.css (currently 1200vh → 1100vh). */
   totalHeight: "1200vh",
-  /** CSS perspective enables future translateZ depth poses on layers. */
-  perspective: 1200,
   /** Drift multiplier vs scroll distance. Clouds + banner share this so
    *  they all descend at the same visual cadence. */
   parallaxWeight: 1.5,
@@ -221,12 +219,9 @@ export default function StudioClone() {
       <FixedLogo />
       <main
         className="studio-scene-main relative overflow-x-clip"
-        style={{
-          height: SCENE.totalHeight,
-          perspective: `${SCENE.perspective}px`,
-        }}
+        style={{ height: SCENE.totalHeight }}
       >
-        <div className="sticky top-0 z-10 flex h-screen w-full flex-col items-center justify-center overflow-visible">
+        <div className="studio-scene-sticky sticky top-0 z-10 flex h-screen w-full flex-col items-center justify-center overflow-visible">
           <StudioFixedStarfield placement="absolute" />
           {/* DOM order is bottom-up for accessibility; explicit z-index preserves
               paint order (melody < clouds < banner < hero < water). Smoke lives in
