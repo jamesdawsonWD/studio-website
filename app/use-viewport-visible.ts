@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState, type RefObject } from "react";
+import { readScrollHeightVh } from "./studio-starfield-data";
 
 /** Fallback when `--studio-viewport-cull-margin` is unset (px or % only). */
 export const VIEWPORT_CULL_MARGIN = "100%";
@@ -61,13 +62,67 @@ function resolveRootMargin(override?: string): string {
   return getViewportCullMargin();
 }
 
+function scrollProgress(): number {
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  return max > 0 ? window.scrollY / max : 0;
+}
+
+function readDefaultParallaxWeight(): number {
+  const raw = getComputedStyle(document.documentElement)
+    .getPropertyValue("--studio-default-parallax-weight")
+    .trim();
+  const parsed = Number.parseFloat(raw);
+  return Number.isFinite(parsed) ? parsed : 1.5;
+}
+
+function parallaxDriftPx(el: Element): number {
+  const style = getComputedStyle(el);
+  const weight =
+    Number.parseFloat(style.getPropertyValue("--parallax-weight")) ||
+    readDefaultParallaxWeight();
+  const scrollHeightVh = readScrollHeightVh();
+  return (
+    scrollProgress() * weight * (scrollHeightVh / 100) * window.innerHeight
+  );
+}
+
+function isIdentityTransform(transform: string): boolean {
+  if (!transform || transform === "none") return true;
+  const match = transform.match(/^matrix\(([^)]+)\)$/);
+  if (!match) return false;
+  const values = match[1].split(",").map((value) => Number.parseFloat(value.trim()));
+  return (
+    values.length === 6 &&
+    values[0] === 1 &&
+    values[1] === 0 &&
+    values[2] === 0 &&
+    values[3] === 1 &&
+    values[4] === 0 &&
+    values[5] === 0
+  );
+}
+
+/** Scroll-driven parallax drift is not always reflected in getBoundingClientRect. */
+function getCullingRect(el: Element): DOMRect {
+  const rect = el.getBoundingClientRect();
+  if (!el.classList.contains("parallax-layer")) return rect;
+
+  const transform = getComputedStyle(el).transform;
+  if (!isIdentityTransform(transform)) return rect;
+
+  const drift = parallaxDriftPx(el);
+  if (drift === 0) return rect;
+
+  return new DOMRect(rect.x, rect.top + drift, rect.width, rect.height);
+}
+
 /** Matches IntersectionObserver with an expanded root (post-transform rect). */
 export function isIntersectingViewport(
   el: Element,
   rootMargin?: string,
 ): boolean {
   const margin = resolveRootMargin(rootMargin);
-  const rect = el.getBoundingClientRect();
+  const rect = getCullingRect(el);
   const { top, right, bottom, left } = parseRootMargin(margin);
 
   const rootTop = -top;
@@ -124,8 +179,8 @@ export function useViewportVisible(
     applyVisibility(isIntersectingViewport(el, margin));
 
     const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry) applyVisibility(entry.isIntersecting);
+      () => {
+        applyVisibility(isIntersectingViewport(el, margin));
       },
       { threshold: 0, rootMargin: margin },
     );

@@ -71,7 +71,12 @@ export function ParallaxLayer({
     >
       {culled ? (
         <div
-          className={showChildren ? undefined : "invisible"}
+          className={[
+            "contents",
+            showChildren ? undefined : "invisible",
+          ]
+            .filter(Boolean)
+            .join(" ")}
           aria-hidden={showChildren ? undefined : true}
         >
           {children}
